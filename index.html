@@ -1,0 +1,2182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ParkEase | Premium SaaS Smart Parking Booking</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Leaflet Maps CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+</head>
+<body>
+
+  <!-- Floating Toast Notifications Box -->
+  <div id="toast-container"></div>
+
+  <div id="app-container">
+
+    <!-- Header navigation bar -->
+    <header class="main-header">
+      <a href="#landing" class="logo-container">
+        <div class="logo-icon">P</div>
+        <span>ParkEase</span>
+      </a>
+
+      <ul class="nav-links" id="header-nav-links">
+        <li><a href="#landing" class="nav-link active" data-screen="landing">Home</a></li>
+        <li><a href="#landing-features" class="nav-link" data-screen="landing-features">Features</a></li>
+        <li><a href="#landing-about" class="nav-link" data-screen="landing-about">About</a></li>
+        <li><a href="#landing-contact" class="nav-link" data-screen="landing-contact">Contact</a></li>
+        <li><a href="#landing-faq" class="nav-link" data-screen="landing-faq">FAQ</a></li>
+        <li><a href="#customer-dashboard" class="nav-link" data-screen="customer-dashboard" style="display:none;" id="nav-dashboard">Dashboard</a></li>
+        <li><a href="#search-parking" class="nav-link" data-screen="search-parking" style="display:none;" id="nav-find-parking">Find Parking</a></li>
+        <li><a href="#booking-history" class="nav-link" data-screen="booking-history" style="display:none;" id="nav-my-bookings">My Bookings</a></li>
+        <li><a href="#active-booking" class="nav-link" data-screen="active-booking" style="display:none;" id="nav-active-booking">Active Booking</a></li>
+        <li><a href="#notifications" class="nav-link" data-screen="notifications" style="display:none;" id="nav-notifications">Notifications</a></li>
+        <li><a href="#settings" class="nav-link" data-screen="settings" style="display:none;" id="nav-settings">Settings</a></li>
+      </ul>
+
+      <!-- User Actions / profile options -->
+      <div class="header-actions">
+        <button class="btn-icon-only" id="notifications-toggle" style="position: relative;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <span style="position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; border: 2px solid white; display:none;" id="unread-notif-dot"></span>
+        </button>
+
+        <div id="header-auth-buttons">
+          <a href="#login" class="btn btn-outline btn-sm" style="margin-right: 0.5rem;">Sign In</a>
+          <a href="#register" class="btn btn-primary btn-sm">Sign Up</a>
+        </div>
+
+        <div id="header-user-menu" style="display: none; align-items: center; gap: 1rem;">
+          <button class="user-menu-btn" id="user-profile-dropdown-btn">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100" alt="Profile" class="avatar-img" id="user-avatar-img">
+            <span class="avatar-text" id="user-display-name">Sarah Jenkins</span>
+          </button>
+          <button class="btn btn-outline btn-sm" id="header-logout-btn">Logout</button>
+          <button class="btn-icon-only close-dashboard-btn" id="header-close-btn" style="display: none; border-radius: 50%; width: 38px; height: 38px; justify-content: center; align-items: center; border: 1px solid var(--border); transition: var(--transition); background: white; flex-shrink: 0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--secondary)" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <!-- Mobile sidebar hamburger toggle -->
+        <button class="mobile-menu-toggle btn-icon-only" id="mobile-sidebar-toggle">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- Notifications Dropdown Box -->
+      <div class="notifications-dropdown" id="notif-dropdown">
+        <div class="notifications-dropdown-header">
+          <h3 style="font-size: 0.95rem;">Notifications</h3>
+          <a href="#" style="font-size: 0.8rem; color: var(--primary); text-decoration: none;" id="mark-notif-read-btn">Mark all read</a>
+        </div>
+        <div class="notifications-list" id="notifications-box"></div>
+      </div>
+    </header>
+
+    <!-- Main Screens Wrapper -->
+    <main style="flex: 1; display: flex; flex-direction: column;" id="main-content-layout">
+
+      <!-- ================= CUSTOMER MODULE ================= -->
+
+      <!-- SCREEN: Landing page -->
+      <section id="screen-landing" class="screen active">
+        <div class="hero">
+          <div class="hero-content">
+            <h1><span>Reserve Your Parking Slot</span> Before You Arrive</h1>
+            <p>Maximize trip efficiency. Secure dedicated vehicle parking spaces globally in real-time across shopping zones, transit terminals, and arenas. Instant QR approvals.</p>
+            
+            <div style="display:flex; gap:1rem;">
+              <a href="#search-parking" class="btn btn-primary" id="landing-hero-cta">Find Nearby Parking</a>
+              <a href="#landing-about" class="btn btn-outline">Learn More</a>
+            </div>
+          </div>
+          
+          <div class="hero-image-wrapper">
+            <svg viewBox="0 0 500 450" class="hero-svg-container" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="500" height="450" rx="24" fill="#F1F5F9" />
+              <path d="M0 225H500" stroke="#CBD5E1" stroke-width="50" />
+              <path d="M0 225H500" stroke="#FFFFFF" stroke-dasharray="12 12" stroke-width="2" />
+              <!-- Draw slots -->
+              <rect x="60" y="60" width="100" height="120" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/>
+              <rect x="60" y="70" width="80" height="60" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="2"/>
+              <text x="100" y="105" fill="#10B981" font-weight="800" text-anchor="middle" font-family="system-ui">A-1</text>
+              <text x="100" y="155" fill="#94A3B8" font-size="11" font-weight="700" text-anchor="middle">Available</text>
+
+              <rect x="340" y="60" width="100" height="120" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/>
+              <rect x="340" y="70" width="80" height="60" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"/>
+              <text x="380" y="105" fill="#2563EB" font-weight="800" text-anchor="middle" font-family="system-ui">A-2</text>
+              <text x="380" y="155" fill="#94A3B8" font-size="11" font-weight="700" text-anchor="middle">Reserved</text>
+
+              <!-- Main Pin -->
+              <g filter="drop-shadow(0px 8px 16px rgba(15, 23, 42, 0.15))">
+                <circle cx="250" cy="225" r="30" fill="#2563EB" />
+                <path d="M250 210c-8.3 0-15 6.7-15 15 0 9 15 25 15 25s15-16 15-25c0-8.3-6.7-15-15-15zm0 20a5 5 0 1 1 0-10 5 5 0 0 1 0 10z" fill="#FFFFFF"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Statistics Section -->
+        <div style="background-color: var(--secondary); color: white; padding: 4rem 2rem;">
+          <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 3rem; text-align: center;">
+            <div>
+              <h3 style="font-size: 3rem; color: var(--accent); margin-bottom: 0.5rem;">98.4%</h3>
+              <p style="color: #94A3B8; font-size: 0.95rem;">Occupancy Tracker Accuracy</p>
+            </div>
+            <div>
+              <h3 style="font-size: 3rem; color: var(--accent); margin-bottom: 0.5rem;">45+</h3>
+              <p style="color: #94A3B8; font-size: 0.95rem;">Major Cities Enabled</p>
+            </div>
+            <div>
+              <h3 style="font-size: 3rem; color: var(--accent); margin-bottom: 0.5rem;">12K+</h3>
+              <p style="color: #94A3B8; font-size: 0.95rem;">Verified Parking Spots</p>
+            </div>
+            <div>
+              <h3 style="font-size: 3rem; color: var(--accent); margin-bottom: 0.5rem;">1M+</h3>
+              <p style="color: #94A3B8; font-size: 0.95rem;">Bookings Successfully Handled</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Features grid -->
+        <div class="features-section" id="landing-features" style="background: white; border-bottom:1px solid var(--border);">
+          <div class="section-title">
+            <h2>SaaS Smart Parking Infrastructure</h2>
+            <p>Access modern convenience designed for both commuters and parking facility branches.</p>
+          </div>
+          <div class="grid-3">
+            <div class="card">
+              <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg></div>
+              <h3>Guaranteed Slots</h3>
+              <p>Reserve slots before leaving home. Experience 100% space guarantee at verified parking garages.</p>
+            </div>
+            <div class="card">
+              <div class="card-icon accent"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></div>
+              <h3>Live Map Integration</h3>
+              <p>Interactive routing centered on your real coordinates. Filter by EV charging stations or valet services.</p>
+            </div>
+            <div class="card">
+              <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg></div>
+              <h3>Secure Cloud Payments</h3>
+              <p>Quick payments via UPI scan codes, Credit Cards, or NetBanking. Auto-settled invoices dispatched instantly.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="steps-section" style="background-color: var(--bg-primary); border-bottom: 1px solid var(--border);">
+          <div class="section-title">
+            <h2>How It Works</h2>
+            <p>Park in three simple, digitally validated steps.</p>
+          </div>
+          <div class="grid-3">
+            <div class="step-card">
+              <div class="step-number">1</div>
+              <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Locate Garages</h3>
+              <p style="color: var(--text-muted); font-size: 0.95rem;">Auto-detect GPS coordinates to instantly show local available slot distances.</p>
+            </div>
+            <div class="step-card">
+              <div class="step-number">2</div>
+              <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Book Space & Pay</h3>
+              <p style="color: var(--text-muted); font-size: 0.95rem;">Choose exact slot grid coordinates, duration hours, and complete secure payment checks.</p>
+            </div>
+            <div class="step-card">
+              <div class="step-number">3</div>
+              <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Scan QR Gate</h3>
+              <p style="color: var(--text-muted); font-size: 0.95rem;">Ramp in and scan reservation barcode details at branch barrier gate cameras.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- About section -->
+        <div class="features-section" id="landing-about">
+          <div class="section-title">
+            <h2>About ParkEase</h2>
+            <p>Our mission is to eliminate urban congestion through digital reservations.</p>
+          </div>
+          <div style="max-width: 800px; margin: 0 auto; text-align: center; color: var(--text-muted); line-height: 1.8;">
+            <p style="margin-bottom: 1.5rem;">ParkEase is a next-generation SaaS parking slot booking framework built for the modern smart city. By linking vehicle telemetry, GPS coordinate mapping, and smart gate cameras, we bridge the gap between drivers and parking branch operators.</p>
+            <p>Drivers avoid circling lanes, managers automate slot allocation layouts, and cities benefit from reduced emissions and traffic congestion. Currently operating in over 45 major metro centers globally.</p>
+          </div>
+        </div>
+
+        <!-- Testimonials -->
+        <div class="testimonials-section" style="background-color: white; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+          <div class="section-title">
+            <h2>SaaS User Feedback</h2>
+            <p>Check ratings from verified commuters using ParkEase.</p>
+          </div>
+          <div class="grid-3">
+            <div class="card testimonial-card">
+              <p class="testimonial-quote">"Pre-booking a parking slot near the office arena reduced my daily commute stress by half. Extremely clean app!"</p>
+              <div class="testimonial-user">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=80" alt="User" class="testimonial-avatar">
+                <div class="testimonial-info">
+                  <h4>Marcus Brody</h4>
+                  <p>Lead Engineer, Fintech Group</p>
+                </div>
+              </div>
+            </div>
+            <div class="card testimonial-card">
+              <p class="testimonial-quote">"The EV charging booking guarantee is outstanding. My vehicle charges while I shop, with zero waiting queue."</p>
+              <div class="testimonial-user">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=80" alt="User" class="testimonial-avatar">
+                <div class="testimonial-info">
+                  <h4>Jane Cooper</h4>
+                  <p>Product Designer</p>
+                </div>
+              </div>
+            </div>
+            <div class="card testimonial-card">
+              <p class="testimonial-quote">"We registered our commercial garage on the branch dashboard and saw slot occupancy rise by 38% in weeks."</p>
+              <div class="testimonial-user">
+                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=80" alt="User" class="testimonial-avatar">
+                <div class="testimonial-info">
+                  <h4>Robert Fox</h4>
+                  <p>Branch Manager, NYC Parking</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="faq-section" id="landing-faq">
+          <div class="section-title">
+            <h2>Frequently Asked Questions</h2>
+            <p>Find answers to common questions about space booking protocols.</p>
+          </div>
+          
+          <div class="faq-item">
+            <div class="faq-question">How do I access the parking lot upon arrival?</div>
+            <div class="faq-answer">Once your booking is confirmed, you will receive a QR code on your dashboard. Simply position this QR code in front of the gate entry camera at the branch, and the barrier gate will lift automatically.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">What if I stay past my booked duration?</div>
+            <div class="faq-answer">If you exceed your booked duration, the system logs an overstay warning. The manager dashboard is alerted, and additional fees are charged to your linked payment method upon exit.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">Can I cancel my reservation?</div>
+            <div class="faq-answer">Yes! Reservations can be cancelled up to 1 hour before the scheduled start time. The refund will be credited back to your original payment method.</div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <footer style="background-color: var(--secondary); color: #94A3B8; padding: 4rem 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
+          <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 3rem; text-align: left;">
+            <div>
+              <h4 style="color: white; margin-bottom: 1rem;">ParkEase System</h4>
+              <p style="font-size: 0.85rem; line-height: 1.6;">Smart parking SaaS reservations. Find, book, and settle parking spaces on-demand digitally.</p>
+            </div>
+            <div>
+              <h4 style="color: white; margin-bottom: 1rem;">Company</h4>
+              <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem;">
+                <li><a href="#landing-about" style="color: #94A3B8; text-decoration: none;">About Us</a></li>
+                <li><a href="#landing-contact" style="color: #94A3B8; text-decoration: none;">Contact Channels</a></li>
+                <li><a href="#landing-faq" style="color: #94A3B8; text-decoration: none;">FAQ Help</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 style="color: white; margin-bottom: 1rem;">Roles Access</h4>
+              <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem;">
+                <li><a href="#login" style="color: #94A3B8; text-decoration: none;">Driver Account</a></li>
+                <li><a href="#login" style="color: #94A3B8; text-decoration: none;">Branch Manager Dashboard</a></li>
+                <li><a href="#login" style="color: #94A3B8; text-decoration: none;">Admin Console</a></li>
+              </ul>
+            </div>
+          </div>
+        </footer>
+      </section>
+
+      <!-- SCREEN: Contact Page -->
+      <section id="screen-landing-contact" class="screen">
+        <div class="contact-wrapper">
+          <div>
+            <h2 style="font-size: 2.25rem; margin-bottom: 1.5rem;">Get in Touch</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Have questions regarding branch manager agreements, bulk corporate accounts, or payment processing details? Submit your inquiry here.</p>
+            <div style="display:flex; flex-direction:column; gap:1.25rem;">
+              <div><strong>Corporate Address:</strong> 842 Broad St, Silicon District, NY</div>
+              <div><strong>Support Hotline:</strong> +1 (800) 555-PARK</div>
+              <div><strong>Email Support:</strong> connect@parkease.com</div>
+            </div>
+          </div>
+          <div class="card">
+            <h3 style="margin-bottom:1.5rem;">Send a Message</h3>
+            <form id="contact-form">
+              <div class="form-group">
+                <label>Name</label>
+                <input type="text" class="form-control" required placeholder="Full Name">
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" class="form-control" required placeholder="name@domain.com">
+              </div>
+              <div class="form-group">
+                <label>Message Content</label>
+                <textarea class="form-control" rows="4" required placeholder="How can our support team assist you?" style="resize:none; font-family:inherit;"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width:100%;">Dispatch Message</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: Login -->
+      <section id="screen-login" class="screen">
+        <div class="auth-wrapper">
+          <div class="auth-card">
+            <div class="auth-header">
+              <h2>Account Sign In</h2>
+              <p>Enter your email and password to log in</p>
+            </div>
+
+            <form id="login-form">
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" class="form-control" id="login-email" required placeholder="name@domain.com" value="customer@parkease.com">
+              </div>
+              <div class="form-group">
+                <label>Password</label>
+                <input type="password" class="form-control" id="login-password" required placeholder="••••••••" value="password123">
+              </div>
+              
+              <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem; margin-top: 1rem;">Sign In</button>
+            </form>
+
+            <div id="login-footer-desc" style="text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem;">
+              Don't have an account? <a href="#register" class="form-link">Sign Up as Customer</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: Register -->
+      <section id="screen-register" class="screen">
+        <div class="auth-wrapper">
+          <div class="auth-card" style="max-width: 540px;">
+            <div class="auth-header">
+              <h2>Customer Sign Up</h2>
+              <p>Register as a driver to secure slot reservations</p>
+            </div>
+            <form id="register-form">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" class="form-control" id="reg-name" required placeholder="Sarah Jenkins">
+              </div>
+              <div class="form-group row">
+                <div>
+                  <label>Email Address</label>
+                  <input type="email" class="form-control" id="reg-email" required placeholder="name@domain.com">
+                </div>
+                <div>
+                  <label>Mobile Number</label>
+                  <input type="text" class="form-control" id="reg-phone" required placeholder="+1 (555) 390-4820">
+                </div>
+              </div>
+              <div class="form-group row">
+                <div>
+                  <label>Vehicle Type</label>
+                  <select class="form-control" id="reg-veh-type">
+                    <option value="Car">Car</option>
+                    <option value="Bike">Bike</option>
+                    <option value="EV">EV (Electric Vehicle)</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Vehicle Number (License Plate)</label>
+                  <input type="text" class="form-control" id="reg-veh-plate" required placeholder="CA-482-Y92">
+                </div>
+              </div>
+              <div class="form-group row">
+                <div>
+                  <label>Password</label>
+                  <input type="password" class="form-control" id="reg-password" required placeholder="Min 8 characters">
+                </div>
+                <div>
+                  <label>Confirm Password</label>
+                  <input type="password" class="form-control" id="reg-confirm-password" required placeholder="Min 8 characters">
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Complete Registration</button>
+            </form>
+            <p style="text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 1.5rem;">
+              Already have an account? <a href="#login" class="form-link">Sign In</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: Forgot Password -->
+      <section id="screen-forgot-password" class="screen">
+        <div class="auth-wrapper">
+          <div class="auth-card">
+            <div class="auth-header">
+              <h2>Reset Password</h2>
+              <p>Enter email associated with your account</p>
+            </div>
+            <form id="forgot-pw-form">
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" class="form-control" required placeholder="name@domain.com" value="customer@parkease.com">
+              </div>
+              <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; margin-bottom: 1rem;">Send Reset Code</button>
+              <a href="#login" class="btn btn-outline" style="width: 100%;">Back to Login</a>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: OTP Verification -->
+      <section id="screen-otp-verify" class="screen">
+        <div class="auth-wrapper">
+          <div class="auth-card">
+            <div class="auth-header">
+              <h2>Verify OTP Code</h2>
+              <p>We sent a 4-digit code to your registered email</p>
+            </div>
+            <form id="otp-form">
+              <div class="otp-container">
+                <input type="text" class="otp-input" maxlength="1" required data-index="0" value="4">
+                <input type="text" class="otp-input" maxlength="1" required data-index="1" value="8">
+                <input type="text" class="otp-input" maxlength="1" required data-index="2" value="2">
+                <input type="text" class="otp-input" maxlength="1" required data-index="3" value="0">
+              </div>
+              <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; margin-bottom: 1.5rem;">Verify Code</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: Password Reset -->
+      <section id="screen-password-reset" class="screen">
+        <div class="auth-wrapper">
+          <div class="auth-card">
+            <div class="auth-header">
+              <h2>Set New Password</h2>
+              <p>Ensure your account remains secure</p>
+            </div>
+            <form id="password-reset-form">
+              <div class="form-group">
+                <label>New Password</label>
+                <input type="password" class="form-control" required placeholder="At least 8 characters">
+              </div>
+              <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" class="form-control" required placeholder="Repeat password">
+              </div>
+              <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">Change Password</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: Customer Dashboard -->
+      <section id="screen-customer-dashboard" class="screen">
+        <div style="padding: 2.5rem 2rem; max-width: 1200px; margin: 0 auto;">
+          <!-- Breadcrumbs -->
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.5rem; display:flex; gap:0.4rem; align-items:center;" class="breadcrumbs-container">
+            <span>Customer</span>
+            <span>/</span>
+            <span style="color:var(--primary); font-weight:600;" id="customer-breadcrumb-current">Dashboard</span>
+          </div>
+          <div class="dashboard-grid">
+            
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+              
+              <!-- Welcome card and GPS info -->
+              <div class="welcome-card">
+                <h2>Hello, <span id="dash-user-name">Sarah Jenkins</span>!</h2>
+                <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem; color:#94A3B8; font-size:0.9rem;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                  <span>Detected GPS Coordinates: </span>
+                  <strong style="color:white;" id="dash-gps-text">MG Road, Bengaluru (12.9716° N, 77.5946° E)</strong>
+                </div>
+                <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
+                  <button class="btn btn-accent btn-sm" id="cust-dash-find-parking-btn">Find Parking Nearby</button>
+                  <button class="btn btn-outline btn-sm" style="color: white; border-color: rgba(255,255,255,0.2);" id="cust-dash-view-history-btn">History</button>
+                </div>
+              </div>
+
+              <!-- Nearby Parkings list -->
+              <div>
+                <h3 style="font-size: 1.25rem; margin-bottom: 1rem;">Nearest Parking Garages</h3>
+                <div class="grid-3" id="dashboard-nearby-parkings-container"></div>
+              </div>
+            </div>
+
+            <!-- Right Side panels -->
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+              
+              <!-- Active Booking Card -->
+              <div class="card" style="padding: 1.5rem;">
+                <h3 style="font-size: 1.15rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                  Current Reservation
+                  <span class="badge" style="background: var(--primary-light); color: var(--primary); font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 4px;" id="active-booking-count-badge">1 Active</span>
+                </h3>
+                <div id="dashboard-active-bookings-container"></div>
+              </div>
+
+              <!-- Primary Vehicle info -->
+              <div class="card" style="padding: 1.5rem;">
+                <h3 style="font-size: 1.15rem; margin-bottom: 1rem;">Primary Vehicle</h3>
+                <div style="display: flex; align-items: center; gap: 1rem; background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                  <div style="background: var(--primary); color: white; width: 42px; height: 42px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+                  </div>
+                  <div style="flex: 1;">
+                    <h4 style="font-size: 0.95rem; font-weight: 700;" id="user-primary-car-model">Tesla Model 3</h4>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);" id="user-primary-car-plate">CA-482-Y92</p>
+                  </div>
+                  <a href="#profile" class="btn btn-outline btn-icon-only btn-sm" style="border:none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                  </a>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: Search Parking (Map screen) -->
+      <section id="screen-search-parking" class="screen">
+        <div class="search-parking-wrapper">
+          
+          <!-- Sidebar: Filters & list -->
+          <div class="search-sidebar">
+            <div class="search-filters-header">
+              <div class="search-bar-styled">
+                <input type="text" id="map-search-input" placeholder="Search parking location..." value="">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              </div>
+              <div class="filters-row" style="overflow-x: auto; white-space: nowrap; gap: 0.5rem; padding-bottom: 0.5rem; display: flex;">
+                <button class="filter-chip active" data-filter="all">All</button>
+                <button class="filter-chip" data-filter="price-low">Lowest Price</button>
+                <button class="filter-chip" data-filter="nearest">Nearest</button>
+                <button class="filter-chip" data-filter="ev">EV Charging</button>
+                <button class="filter-chip" data-filter="valet">Valet</button>
+                <button class="filter-chip" data-filter="24x7">24x7</button>
+                <button class="filter-chip" data-filter="covered">Covered</button>
+                <button class="filter-chip" data-filter="bike">Bike</button>
+                <button class="filter-chip" data-filter="car">Car</button>
+                <button class="filter-chip" data-filter="rating">4.5+ Rating</button>
+              </div>
+            </div>
+            
+            <div class="parking-list-container" id="map-screen-parking-list"></div>
+          </div>
+
+          <!-- Main Interactive Leaflet Map -->
+          <div class="map-canvas-container">
+            <div id="leaflet-map"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: Parking Details -->
+      <section id="screen-parking-details" class="screen">
+        <div style="background-color: white; border-bottom: 1px solid var(--border); padding: 1.5rem 2rem;">
+          <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 1rem;">
+            <a href="#search-parking" class="btn btn-outline btn-icon-only" id="details-back-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </a>
+            <div>
+              <h2 id="details-parking-name" style="font-size: 1.5rem;">City Center Parking Lot</h2>
+              <p id="details-parking-addr" style="font-size: 0.85rem; color: var(--text-muted);"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="details-grid">
+          <div>
+            <div class="image-gallery">
+              <img id="details-img-main" src="" alt="Parking main" class="gallery-main">
+              <div class="gallery-side">
+                <img id="details-img-side1" src="https://images.unsplash.com/photo-1590674899484-d5640e854abe?auto=format&fit=crop&q=80&w=300" alt="Parking side 1" class="gallery-side-img">
+                <img id="details-img-side2" src="https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&q=80&w=300" alt="Parking side 2" class="gallery-side-img">
+              </div>
+            </div>
+
+            <div class="info-section">
+              <h3 style="font-size: 1.25rem; margin-bottom: 1rem;">About Parking Area</h3>
+              <p id="details-parking-desc" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;"></p>
+              
+              <h3 style="font-size: 1.15rem; margin-top: 2rem; margin-bottom: 1rem;">Amenities Available</h3>
+              <div class="amenities-list" id="details-amenities-container"></div>
+            </div>
+
+            <div class="info-section">
+              <h3 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Customer Reviews</h3>
+              <div style="display: flex; gap: 3rem; margin-bottom: 2rem; align-items: center; background: var(--bg-primary); padding: 1.5rem; border-radius: var(--radius-md);">
+                <div style="text-align: center;">
+                  <h4 style="font-size: 3rem; color: var(--secondary); line-height: 1;" id="details-rating-big">4.8</h4>
+                  <div class="rating-stars" style="justify-content: center; margin: 0.5rem 0;" id="details-rating-stars-container"></div>
+                  <p style="font-size: 0.8rem; color: var(--text-muted);" id="details-review-count">Based on 82 reviews</p>
+                </div>
+                
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 0.4rem;">
+                  <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem;">
+                    <span style="width: 10px;">5</span>
+                    <div style="flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;"><div style="width: 85%; height: 100%; background: #F59E0B;"></div></div>
+                    <span style="width: 25px; text-align: right;">85%</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem;">
+                    <span style="width: 10px;">4</span>
+                    <div style="flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;"><div style="width: 10%; height: 100%; background: #F59E0B;"></div></div>
+                    <span style="width: 25px; text-align: right;">10%</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem;">
+                    <span style="width: 10px;">3</span>
+                    <div style="flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;"><div style="width: 5%; height: 100%; background: #F59E0B;"></div></div>
+                    <span style="width: 25px; text-align: right;">5%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 1.5rem;" id="details-reviews-feed"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="booking-form-card">
+              <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Parking Tariff</h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Flat hourly rates apply. Select slots next to start checkout.</p>
+              
+              <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-md); border:1px solid var(--border); margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                  <span style="font-size: 0.85rem; color: var(--text-muted);">Hourly Price</span>
+                  <span style="font-weight: 700; color: var(--secondary);" id="details-price-hour"></span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="font-size: 0.85rem; color: var(--text-muted);">Slots Available</span>
+                  <span style="font-weight: 700; color: var(--success);" id="details-available-badge"></span>
+                </div>
+              </div>
+
+              <button class="btn btn-primary" style="width: 100%;" id="details-book-now-btn">Book Now (Select Slot)</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: Slot Booking -->
+      <section id="screen-slot-booking" class="screen">
+        <div style="background-color: white; border-bottom: 1px solid var(--border); padding: 1.5rem 2rem;">
+          <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 1rem;">
+            <a href="#parking-details" class="btn btn-outline btn-icon-only" id="booking-back-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </a>
+            <div>
+              <h2 style="font-size: 1.5rem;">Select Slot & Schedule</h2>
+              <p id="booking-subtitle-name" style="font-size: 0.85rem; color: var(--text-muted);"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="slot-booking-wrapper">
+          <div class="slot-grid-card">
+            <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Interactive Floor Layout Map</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Tap to select a green slot space. Red, Blue, and Grey spaces are unavailable.</p>
+            
+            <div class="slot-legend">
+              <div class="legend-item"><div class="legend-box available"></div><span>Available</span></div>
+              <div class="legend-item"><div class="legend-box reserved"></div><span>Reserved</span></div>
+              <div class="legend-item"><div class="legend-box occupied"></div><span>Occupied</span></div>
+              <div class="legend-item"><div class="legend-box maintenance"></div><span>Maintenance</span></div>
+              <div class="legend-item"><div class="legend-box selected"></div><span>Your Selection</span></div>
+            </div>
+
+            <!-- Floor tabs selection -->
+            <div class="tabs-header" style="justify-content: center; margin-bottom: 1.5rem;">
+              <button class="tab-btn active" data-floor="F1">Level 1 (General)</button>
+              <button class="tab-btn" data-floor="F2">Level 2 (EV Stations)</button>
+              <button class="tab-btn" data-floor="F3">Level 3 (Valet/Premium)</button>
+            </div>
+
+            <div class="slot-matrix" id="booking-slots-matrix"></div>
+          </div>
+
+          <!-- Checkout scheduler sidebar -->
+          <div class="booking-form-card">
+            <h3 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Booking Details</h3>
+            
+            <form id="booking-checkout-form">
+              <div class="form-group">
+                <label>Arrival Date</label>
+                <input type="date" class="form-control" id="booking-date" required>
+              </div>
+
+              <div class="form-group row">
+                <div>
+                  <label>Arrival Time</label>
+                  <input type="time" class="form-control" id="booking-time" required value="12:00">
+                </div>
+                <div>
+                  <label>Duration (Hours)</label>
+                  <select class="form-control" id="booking-duration">
+                    <option value="1">1 Hour</option>
+                    <option value="2" selected>2 Hours</option>
+                    <option value="4">4 Hours</option>
+                    <option value="8">8 Hours</option>
+                    <option value="24">24 Hours</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Selected slot card layout -->
+              <div style="background: var(--primary-light); border: 1px solid rgba(37,99,235,0.15); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <h4 style="font-size: 0.85rem; color: var(--primary); font-weight: 700; text-transform: uppercase;">Selected Space</h4>
+                  <p style="font-size: 1.15rem; font-weight: 800; color: var(--secondary);" id="booking-selected-slot-display">None Selected</p>
+                </div>
+                <div style="text-align: right;">
+                  <h4 style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Category</h4>
+                  <p style="font-size: 0.95rem; font-weight: 600;" id="booking-selected-slot-cat">-</p>
+                </div>
+              </div>
+
+              <!-- Cost Summary -->
+              <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                  <span style="color: var(--text-muted);">Slot Price (<span id="summary-hours-text">2</span> hrs)</span>
+                  <span id="summary-base-price">$8.00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                  <span style="color: var(--text-muted);">Service Fee</span>
+                  <span>$1.50</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 1.15rem; font-weight: 800; color: var(--secondary); margin-top: 0.5rem; border-top: 1px dashed var(--border); padding-top: 0.5rem;">
+                  <span>Total Cost</span>
+                  <span id="summary-total-cost">$9.50</span>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-accent" style="width: 100%;" id="confirm-booking-submit-btn" disabled>Confirm & Pay Now</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: Booking Confirmation -->
+      <section id="screen-booking-confirmation" class="screen">
+        <div class="confirmation-card">
+          <div class="confirmation-header">
+            <div class="confirmation-success-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <h2 style="color: white; font-size: 1.75rem;">Booking Confirmed!</h2>
+            <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-top: 0.25rem;">Show this QR code at the parking gate barrier camera</p>
+          </div>
+          
+          <div class="confirmation-body">
+            <!-- Simulated QR code -->
+            <div class="qr-code-wrapper">
+              <svg width="120" height="120" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="0" y="0" width="30" height="30" fill="currentColor"/>
+                <rect x="3" y="3" width="24" height="24" fill="white"/>
+                <rect x="8" y="8" width="14" height="14" fill="currentColor"/>
+                
+                <rect x="70" y="0" width="30" height="30" fill="currentColor"/>
+                <rect x="73" y="3" width="24" height="24" fill="white"/>
+                <rect x="78" y="8" width="14" height="14" fill="currentColor"/>
+                
+                <rect x="0" y="70" width="30" height="30" fill="currentColor"/>
+                <rect x="3" y="73" width="24" height="24" fill="white"/>
+                <rect x="8" y="78" width="14" height="14" fill="currentColor"/>
+                
+                <rect x="40" y="5" width="10" height="15" fill="currentColor"/>
+                <rect x="55" y="10" width="8" height="20" fill="currentColor"/>
+                <rect x="40" y="35" width="20" height="10" fill="currentColor"/>
+                <rect x="10" y="45" width="15" height="15" fill="currentColor"/>
+                <rect x="70" y="45" width="20" height="20" fill="currentColor"/>
+                <rect x="45" y="60" width="15" height="25" fill="currentColor"/>
+                <rect x="75" y="75" width="15" height="15" fill="currentColor"/>
+              </svg>
+            </div>
+            
+            <div style="text-align: center; margin-bottom: 2rem;">
+              <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Booking Reference ID</p>
+              <h3 style="font-size: 1.35rem; color: var(--secondary)" id="conf-booking-id">PE-8294-A9</h3>
+            </div>
+
+            <!-- Booking details -->
+            <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; margin-bottom: 2rem;">
+              <div class="info-row-item">
+                <label>Parking Area</label>
+                <span id="conf-parking-name">City Center Parking Lot</span>
+              </div>
+              <div class="info-row-item">
+                <label>Floor / Slot Space</label>
+                <span id="conf-parking-slot">Level 1 - A12</span>
+              </div>
+              <div class="info-row-item">
+                <label>Arrival Schedule</label>
+                <span id="conf-parking-schedule">July 18, 2026 @ 12:00 PM</span>
+              </div>
+              <div class="info-row-item">
+                <label>Duration Allocated</label>
+                <span id="conf-parking-duration">2 Hours</span>
+              </div>
+              <div class="info-row-item">
+                <label>Total Payment Settle</label>
+                <span id="conf-parking-price">$9.50 (Paid)</span>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              <button class="btn btn-primary" id="conf-get-nav-directions">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+                Navigate to Parking
+              </button>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <button class="btn btn-outline" id="conf-goto-bookings-btn">My Bookings</button>
+                <button class="btn btn-danger btn-outline" id="conf-cancel-booking-btn">Cancel Booking</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: Booking History -->
+      <section id="screen-booking-history" class="screen">
+        <div style="padding: 2.5rem 2rem; max-width: 1000px; margin: 0 auto;">
+          <h2 style="font-size: 2rem; margin-bottom: 1.5rem;">Booking Reservations History</h2>
+          
+          <div class="tabs-header">
+            <button class="tab-btn active" data-history-tab="active">Upcoming</button>
+            <button class="tab-btn" data-history-tab="completed">Completed</button>
+            <button class="tab-btn" data-history-tab="cancelled">Cancelled</button>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 1.5rem;" id="booking-history-list"></div>
+        </div>
+      </section>
+
+      <!-- SCREEN: Profile Page -->
+      <section id="screen-profile" class="screen">
+        <div style="padding: 2.5rem 2rem; max-width: 1000px; margin: 0 auto;">
+          <h2 style="font-size: 2rem; margin-bottom: 2rem;">User Settings & Profile</h2>
+          
+          <div style="display: grid; grid-template-columns: 280px 1fr; gap: 3rem;">
+            <!-- Left Side Settings links -->
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <button class="role-btn active" style="background:#EFF6FF; color:var(--primary); justify-content:flex-start;" data-profile-section="personal">Personal Details</button>
+              <button class="role-btn" style="justify-content:flex-start; background:transparent;" data-profile-section="vehicles">Vehicle Registry</button>
+              <button class="role-btn" style="justify-content:flex-start; background:transparent;" data-profile-section="payments">Payment Methods</button>
+            </div>
+
+            <!-- Right Side panels container -->
+            <div class="card" style="padding: 2.5rem;">
+              
+              <div id="profile-sec-personal" class="profile-section-block">
+                <h3 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Personal Details</h3>
+                <form id="profile-personal-form">
+                  <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" class="form-control" value="Sarah Jenkins" id="prof-name">
+                  </div>
+                  <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" class="form-control" value="customer@parkease.com" id="prof-email" readonly style="background-color: var(--bg-primary);">
+                  </div>
+                  <div class="form-group">
+                    <label>Mobile Number</label>
+                    <input type="text" class="form-control" value="+1 (555) 390-4820" id="prof-phone">
+                  </div>
+                  <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Save Changes</button>
+                </form>
+              </div>
+
+              <div id="profile-sec-vehicles" class="profile-section-block" style="display:none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                  <h3 style="font-size: 1.25rem;">Vehicle Registry</h3>
+                  <button class="btn btn-primary btn-sm" id="profile-add-vehicle-btn">+ Add Vehicle</button>
+                </div>
+                <div id="profile-vehicles-container"></div>
+              </div>
+
+              <div id="profile-sec-payments" class="profile-section-block" style="display:none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                  <h3 style="font-size: 1.25rem;">Payment Methods</h3>
+                  <button class="btn btn-primary btn-sm" id="profile-add-payment-btn">+ Add Card</button>
+                </div>
+                <div id="profile-payments-container"></div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: Active Booking Detail -->
+      <section id="screen-active-booking" class="screen">
+        <div style="padding: 2.5rem 2rem; max-width: 800px; margin: 0 auto;">
+          <h2 style="font-size: 2rem; margin-bottom: 1.5rem;">Active Parking Booking</h2>
+          
+          <div id="active-booking-details-container">
+            <!-- Populated dynamically by javascript -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: Customer Notifications -->
+      <section id="screen-notifications" class="screen">
+        <div style="padding: 2.5rem 2rem; max-width: 800px; margin: 0 auto;">
+          <h2 style="font-size: 2rem; margin-bottom: 1.5rem;">System Announcements & Alerts</h2>
+          
+          <div class="card" style="padding: 2rem;">
+            <div style="display:flex; flex-direction:column; gap:1.25rem;" id="customer-notifications-list">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: Customer Settings -->
+      <section id="screen-settings" class="screen">
+        <div style="padding: 2.5rem 2rem; max-width: 600px; margin: 0 auto;">
+          <h2 style="font-size: 2rem; margin-bottom: 1.5rem;">Preferences & Settings</h2>
+          
+          <div class="card" style="padding: 2.5rem;">
+            <form id="customer-settings-form">
+              <h3 style="font-size: 1.25rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Global Alert Options</h3>
+              <div style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom: 2rem;">
+                <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                  <input type="checkbox" id="settings-pref-push" checked style="width:18px; height:18px;">
+                  <span>Enable push notification banners</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                  <input type="checkbox" id="settings-pref-overstay" checked style="width:18px; height:18px;">
+                  <span>Overstay alerts reminder warning</span>
+                </label>
+              </div>
+
+              <h3 style="font-size: 1.25rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Vehicle Assignment</h3>
+              <div class="form-group" style="margin-bottom: 2rem;">
+                <label>Default Parking Vehicle</label>
+                <select class="form-control" id="settings-default-vehicle"></select>
+              </div>
+
+              <h3 style="font-size: 1.25rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Default Payment Card</h3>
+              <div class="form-group" style="margin-bottom: 2rem;">
+                <label>Preferred Checkout Method</label>
+                <select class="form-control" id="settings-default-card"></select>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="width: 100%;">Save Preferences</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: Custom 404 Page -->
+      <section id="screen-404" class="screen">
+        <div style="min-height: calc(100vh - 72px); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem;">
+          <h1 style="font-size: 6rem; color: var(--primary); line-height: 1; margin-bottom: 1rem;">404</h1>
+          <h2 style="font-size: 2rem; margin-bottom: 1rem; color: var(--secondary);">Page Not Found</h2>
+          <p style="color: var(--text-muted); max-width: 480px; margin-bottom: 2rem;">The screen layout or path you tried to access does not exist or has been relocated.</p>
+          <a href="#landing" class="btn btn-primary">Return to Home Screen</a>
+        </div>
+      </section>
+
+      <!-- SCREEN: Unauthorized Page -->
+      <section id="screen-unauthorized" class="screen">
+        <div style="min-height: calc(100vh - 72px); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem;">
+          <h1 style="font-size: 6rem; color: var(--danger); line-height: 1; margin-bottom: 1rem;">403</h1>
+          <h2 style="font-size: 2rem; margin-bottom: 1rem; color: var(--secondary);">Unauthorized Access</h2>
+          <p style="color: var(--text-muted); max-width: 480px; margin-bottom: 2rem;">You do not have permission to view this dashboard page. Please log in with matching credentials.</p>
+          <button class="btn btn-primary" id="unauthorized-back-btn">Go to Dashboard</button>
+        </div>
+      </section>
+
+
+      <!-- ================= PARKING BRANCH MANAGER MODULE ================= -->
+      
+      <div id="owner-dashboard-layout" class="dashboard-wrapper" style="display: none;">
+        
+        <aside class="sidebar">
+          <ul class="sidebar-menu">
+            <li>
+              <a class="sidebar-link active" data-owner-screen="owner-overview">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                Dashboard
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" data-owner-screen="owner-branch">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                My Branch
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" data-owner-screen="owner-manage-slots">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+                Parking Slots
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" data-owner-screen="owner-bookings">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line></svg>
+                Today's Bookings
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" data-owner-screen="owner-customers">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                Customers
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" data-owner-screen="owner-revenue">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                Revenue
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" data-owner-screen="owner-reports">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                Reports
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" data-owner-screen="owner-notifications">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                Notifications
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" data-owner-screen="owner-profile">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                Profile
+              </a>
+            </li>
+          </ul>
+        </aside>
+
+        <!-- Dashboard Content Area -->
+        <div class="dashboard-content-area">
+          <!-- Breadcrumbs -->
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.5rem; display:flex; gap:0.4rem; align-items:center;" class="breadcrumbs-container">
+            <span>Manager</span>
+            <span>/</span>
+            <span style="color:var(--primary); font-weight:600;" id="owner-breadcrumb-current">Dashboard</span>
+          </div>
+          
+          <!-- SUB-SCREEN: Branch Manager Overview -->
+          <div id="screen-owner-overview" class="owner-subscreen" style="display: block;">
+            
+            <!-- Red Overstay Alerts Banner -->
+            <div id="manager-alerts-container"></div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+              <div>
+                <h2 style="font-size: 1.75rem;" id="owner-overview-branch-name">Branch Overview</h2>
+                <p style="font-size:0.85rem; color:var(--text-muted);" id="owner-overview-branch-addr">Loading assigned branch...</p>
+              </div>
+              <!-- Simulated Gate Scanners -->
+              <div style="display:flex; gap:0.5rem;">
+                <button class="btn btn-primary btn-sm" id="owner-simulate-entry-btn">Scan Gate Entry</button>
+                <button class="btn btn-outline btn-sm" id="owner-simulate-exit-btn">Scan Gate Exit</button>
+              </div>
+            </div>
+            
+            <div class="stats-grid">
+              <div class="stat-card" style="border-left: 4px solid var(--primary);">
+                <div>
+                  <div class="stat-label">Total Spaces</div>
+                  <div class="stat-val" id="owner-overview-total">0</div>
+                </div>
+              </div>
+              <div class="stat-card" style="border-left: 4px solid var(--success);">
+                <div>
+                  <div class="stat-label">Available Slots</div>
+                  <div class="stat-val" id="owner-overview-avail" style="color:var(--success);">0</div>
+                </div>
+              </div>
+              <div class="stat-card" style="border-left: 4px solid var(--text-muted);">
+                <div>
+                  <div class="stat-label">Occupied Slots</div>
+                  <div class="stat-val" id="owner-overview-occ" style="color:var(--text-muted);">0</div>
+                </div>
+              </div>
+              <div class="stat-card" style="border-left: 4px solid var(--accent);">
+                <div>
+                  <div class="stat-label">Reserved Slots</div>
+                  <div class="stat-val" id="owner-overview-res" style="color:var(--accent);">0</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Revenue Trend SVG Chart -->
+            <div class="chart-container-card" style="margin-top:2rem;">
+              <div class="chart-header">
+                <h3>Weekly Booking Activity</h3>
+                <span style="font-size:0.85rem; color:var(--text-light);" id="auto-release-scheduler-badge">Auto-Release Scheduler Active</span>
+              </div>
+              <svg class="svg-chart" viewBox="0 0 600 220">
+                <line x1="50" y1="30" x2="550" y2="30" class="chart-grid-line"/>
+                <line x1="50" y1="180" x2="550" y2="180" class="chart-grid-line"/>
+                <path class="chart-area" d="M 50 180 Q 133 110 216 140 T 383 70 T 550 50 L 550 180 Z" style="fill: rgba(37, 99, 235, 0.05);" />
+                <path class="chart-line" d="M 50 180 Q 133 110 216 140 T 383 70 T 550 50" stroke="var(--primary)" stroke-width="3" fill="none" />
+                <text x="50" y="205" fill="#94A3B8" font-size="11" text-anchor="middle">Mon</text>
+                <text x="216" y="205" fill="#94A3B8" font-size="11" text-anchor="middle">Wed</text>
+                <text x="383" y="205" fill="#94A3B8" font-size="11" text-anchor="middle">Fri</text>
+                <text x="550" y="205" fill="#94A3B8" font-size="11" text-anchor="middle">Sun</text>
+              </svg>
+            </div>
+          </div>
+
+          <!-- SUB-SCREEN: My Branch Details & Settings -->
+          <div id="screen-owner-branch" class="owner-subscreen" style="display: none;">
+            <h2 style="font-size: 1.75rem; margin-bottom: 1.5rem;">Configure Parking Branch</h2>
+            
+            <div style="display:grid; grid-template-columns: 1.2fr 0.8fr; gap:2rem; flex-wrap:wrap;">
+              
+              <!-- Details card -->
+              <div class="card" style="padding:2rem;">
+                <h3 style="font-size:1.15rem; margin-bottom:1.5rem;">Branch Core Specifications</h3>
+                <form id="owner-branch-details-form">
+                  <div class="form-group">
+                    <label>Branch Display Name</label>
+                    <input type="text" class="form-control" required id="ob-settings-name">
+                  </div>
+                  <div class="form-group">
+                    <label>Address Coordinates String</label>
+                    <input type="text" class="form-control" required id="ob-settings-addr">
+                  </div>
+                  <div class="form-group row">
+                    <div>
+                      <label>Hourly Tariff ($)</label>
+                      <input type="number" class="form-control" step="0.50" required id="ob-settings-rate">
+                    </div>
+                    <div>
+                      <label>Merchant UPI ID (Scan Gateway)</label>
+                      <input type="text" class="form-control" required id="ob-settings-upi" placeholder="merchant@upi">
+                    </div>
+                  </div>
+                  <div class="form-group row" style="align-items: center; margin-top: 1rem;">
+                    <div style="flex:1;">
+                      <label>Payment QR Code Image</label>
+                      <input type="file" class="form-control" id="ob-settings-qr-file" accept="image/*" style="font-size: 0.8rem; padding: 0.35rem 0.5rem; height: auto;">
+                    </div>
+                    <div style="width: 100px; display:flex; flex-direction:column; align-items:center;">
+                      <span style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.25rem;">QR Preview</span>
+                      <div style="width: 60px; height: 60px; border: 1px dashed var(--border); border-radius: 4px; display:flex; align-items:center; justify-content:center; overflow:hidden; background:var(--bg-primary);" id="ob-settings-qr-preview-box">
+                        <span style="font-size:0.6rem; color:var(--text-muted); text-align:center; padding:2px;" id="ob-settings-qr-preview-txt">No Image</span>
+                        <img id="ob-settings-qr-preview-img" style="width:100%; height:100%; object-fit:contain; display:none;" alt="QR Preview">
+                      </div>
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem;">Save Branch Changes</button>
+                </form>
+              </div>
+
+              <!-- Amenities Checklists -->
+              <div class="card" style="padding:2rem; display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                  <h3 style="font-size:1.15rem; margin-bottom:1.5rem;">Amenities Offered</h3>
+                  <form id="owner-branch-amenities-form">
+                    <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                      <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                        <input type="checkbox" id="ob-amenity-ev" value="EV Charging" style="width:18px; height:18px;">
+                        <span>EV Fast Chargers</span>
+                      </label>
+                      <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                        <input type="checkbox" id="ob-amenity-cctv" value="CCTV" style="width:18px; height:18px;">
+                        <span>CCTV 24/7 Security</span>
+                      </label>
+                      <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                        <input type="checkbox" id="ob-amenity-wheel" value="Wheelchair Access" style="width:18px; height:18px;">
+                        <span>Handicap Accessible</span>
+                      </label>
+                      <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                        <input type="checkbox" id="ob-amenity-valet" value="Valet" style="width:18px; height:18px;">
+                        <span>Valet Service Assistance</span>
+                      </label>
+                      <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                        <input type="checkbox" id="ob-amenity-wash" value="Car Wash" style="width:18px; height:18px;">
+                        <span>Car Wash Bay</span>
+                      </label>
+                    </div>
+                    <button type="submit" class="btn btn-outline" style="margin-top: 2rem; width:100%;">Update Amenities</button>
+                  </form>
+                </div>
+                
+                <div style="background:var(--bg-primary); padding:1rem; border-radius:var(--radius-sm); margin-top:1.5rem;">
+                  <span style="font-size:0.75rem; color:var(--text-muted);">Assigned Branch ID</span>
+                  <p style="font-size:0.85rem; font-weight:700;" id="ob-assigned-id">park-000</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- SUB-SCREEN: Manage Slots Grid -->
+          <div id="screen-owner-manage-slots" class="owner-subscreen" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap:wrap; gap:1rem;">
+              <div>
+                <h2 style="font-size: 1.75rem;">Manage Slots Layout</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Adjust statuses, switch categories, or add slots in real-time</p>
+              </div>
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <select class="form-control" style="width:100px;" id="owner-slots-floor-select">
+                  <option value="F1">Floor 1</option>
+                  <option value="F2">Floor 2</option>
+                </select>
+                <button class="btn btn-primary btn-sm" id="owner-create-slot-btn">+ Add Space</button>
+              </div>
+            </div>
+            
+            <div class="slots-manager-grid" id="owner-slots-manager-container"></div>
+          </div>
+
+          <!-- SUB-SCREEN: Booking management list -->
+          <div id="screen-owner-bookings" class="owner-subscreen" style="display: none;">
+            <h2 style="font-size: 1.75rem; margin-bottom: 1.5rem;">Branch Bookings Registry</h2>
+            
+            <div class="card" style="padding:1.5rem; margin-bottom:1.5rem;">
+              <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+                <div style="flex:1; min-width:250px;">
+                  <input type="text" class="form-control" placeholder="Search by Booking ID reference or Driver name..." id="owner-bookings-search">
+                </div>
+                <div style="width:160px;">
+                  <select class="form-control" id="owner-bookings-filter-status">
+                    <option value="all">All Bookings</option>
+                    <option value="Active">Active</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Overstay">Overstay</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-wrapper">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Booking ID</th>
+                    <th>Customer Name</th>
+                    <th>Slot</th>
+                    <th>Time & Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="owner-bookings-table-body"></tbody>
+              </table>
+            </div>
+
+            <!-- Pagination footer -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem;">
+              <span style="font-size:0.85rem; color:var(--text-muted);" id="owner-bookings-pagination-info">Showing entries</span>
+              <div style="display:flex; gap:0.5rem;">
+                <button class="btn btn-outline btn-sm" id="owner-bookings-prev-btn">Prev</button>
+                <button class="btn btn-outline btn-sm" id="owner-bookings-next-btn">Next</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-SCREEN: Customers registry -->
+          <div id="screen-owner-customers" class="owner-subscreen" style="display: none;">
+            <h2 style="font-size: 1.75rem; margin-bottom: 1.5rem;">Active Drivers Directory</h2>
+
+            <div class="card" style="padding:1.5rem; margin-bottom:1.5rem;">
+              <input type="text" class="form-control" placeholder="Search drivers by name or email..." id="owner-customers-search">
+            </div>
+
+            <div class="table-wrapper">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>User ID</th>
+                    <th>Driver Name</th>
+                    <th>Contact Email</th>
+                    <th>Current Vehicle</th>
+                    <th>Joined Date</th>
+                  </tr>
+                </thead>
+                <tbody id="owner-customers-table-body"></tbody>
+              </table>
+            </div>
+
+            <!-- Pagination footer -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem;">
+              <span style="font-size:0.85rem; color:var(--text-muted);" id="owner-customers-pagination-info">Showing driver entries</span>
+              <div style="display:flex; gap:0.5rem;">
+                <button class="btn btn-outline btn-sm" id="owner-customers-prev-btn">Prev</button>
+                <button class="btn btn-outline btn-sm" id="owner-customers-next-btn">Next</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-SCREEN: Revenue analytics detailed -->
+          <div id="screen-owner-revenue" class="owner-subscreen" style="display: none;">
+            <h2 style="font-size: 1.75rem; margin-bottom: 1.5rem;">Revenue Analytics</h2>
+            
+            <div class="stats-grid">
+              <div class="stat-card" style="border-left:4px solid #10B981;">
+                <div>
+                  <div class="stat-label">Daily Income</div>
+                  <div class="stat-val" id="owner-revenue-daily">$0.00</div>
+                </div>
+              </div>
+              <div class="stat-card" style="border-left:4px solid var(--primary);">
+                <div>
+                  <div class="stat-label">Weekly Average</div>
+                  <div class="stat-val" id="owner-revenue-weekly">$0.00</div>
+                </div>
+              </div>
+              <div class="stat-card" style="border-left:4px solid #F59E0B;">
+                <div>
+                  <div class="stat-label">Monthly Gross</div>
+                  <div class="stat-val" id="owner-revenue-monthly">$0.00</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-container-card" style="margin-top:2rem;">
+              <h3>Monthly Sales Stream</h3>
+              <div style="height: 200px; display: flex; align-items: flex-end; justify-content: space-around; gap: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border);">
+                <div style="display:flex; flex-direction:column; align-items:center; flex:1; height: 35%;">
+                  <div style="width:100%; background:var(--success); border-radius:4px 4px 0 0; flex:1;" title="Jan"></div>
+                  <span style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">Jan</span>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:center; flex:1; height: 60%;">
+                  <div style="width:100%; background:var(--success); border-radius:4px 4px 0 0; flex:1;" title="Mar"></div>
+                  <span style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">Mar</span>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:center; flex:1; height: 95%;">
+                  <div style="width:100%; background:var(--success); border-radius:4px 4px 0 0; flex:1;" title="May"></div>
+                  <span style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">May</span>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:center; flex:1; height: 75%;">
+                  <div style="width:100%; background:var(--success); border-radius:4px 4px 0 0; flex:1;" title="Jul"></div>
+                  <span style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">Jul</span>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:center; flex:1; height: 80%;">
+                  <div style="width:100%; background:var(--success); border-radius:4px 4px 0 0; flex:1;" title="Sep"></div>
+                  <span style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">Sep</span>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:center; flex:1; height: 90%;">
+                  <div style="width:100%; background:var(--success); border-radius:4px 4px 0 0; flex:1;" title="Nov"></div>
+                  <span style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">Nov</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-SCREEN: Reports & Exporter -->
+          <div id="screen-owner-reports" class="owner-subscreen" style="display: none;">
+            <h2 style="font-size: 1.75rem; margin-bottom: 1.5rem;">Branch Reports</h2>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:2rem; flex-wrap:wrap;">
+              
+              <!-- Export card -->
+              <div class="card" style="padding:2rem; display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                  <h3 style="font-size:1.15rem; margin-bottom:0.75rem;">Export Bookings Ledger</h3>
+                  <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.5rem;">Extract checking and reservation data to Excel CSV file format.</p>
+                  
+                  <div class="form-group row">
+                    <div>
+                      <label>From Date</label>
+                      <input type="date" class="form-control" value="2026-07-01">
+                    </div>
+                    <div>
+                      <label>To Date</label>
+                      <input type="date" class="form-control" value="2026-07-31">
+                    </div>
+                  </div>
+                </div>
+                
+                <button class="btn btn-primary" id="owner-reports-export-btn" style="margin-top: 1.5rem; width:100%;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Export CSV Ledger
+                </button>
+              </div>
+
+              <!-- Occupancy statement card -->
+              <div class="card" style="padding:2rem;">
+                <h3 style="font-size:1.15rem; margin-bottom:1rem;">Peak Capacity Insights</h3>
+                <div style="display:flex; flex-direction:column; gap:1rem;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:0.5rem;">
+                    <span style="font-size:0.85rem; color:var(--text-muted);">Occupancy Ratio</span>
+                    <strong style="font-size:0.9rem;" id="owner-reports-ratio">0%</strong>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:0.5rem;">
+                    <span style="font-size:0.85rem; color:var(--text-muted);">EV Slots Occupancy</span>
+                    <strong style="font-size:0.9rem;" id="owner-reports-ev">0/0 occupied</strong>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:0.5rem;">
+                    <span style="font-size:0.85rem; color:var(--text-muted);">Overstayers Registered</span>
+                    <strong style="font-size:0.9rem; color:var(--danger);" id="owner-reports-overstayers">0</strong>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- SUB-SCREEN: Notifications Announcement -->
+          <div id="screen-owner-notifications" class="owner-subscreen" style="display: none;">
+            <h2 style="font-size: 1.75rem; margin-bottom: 1.5rem;">Announcements & Alerts</h2>
+
+            <div style="display:grid; grid-template-columns: 1.2fr 0.8fr; gap:2rem; flex-wrap:wrap; align-items:start;">
+              
+              <!-- Push Alert form -->
+              <div class="card" style="padding:2rem;">
+                <h3 style="font-size:1.15rem; margin-bottom:1.5rem;">Broadcast Warning to Branch Parkers</h3>
+                <form id="owner-announcement-form">
+                  <div class="form-group">
+                    <label>Broadcast Title</label>
+                    <input type="text" class="form-control" required placeholder="Elevator Maintenance Scheduled" id="owner-ann-title">
+                  </div>
+                  <div class="form-group">
+                    <label>Notification Body</label>
+                    <textarea class="form-control" required style="height: 100px; font-family: inherit; resize: none;" placeholder="Provide brief instructions..." id="owner-ann-message"></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary" style="width:100%; margin-top:1rem;">Publish Broadcast</button>
+                </form>
+              </div>
+
+              <!-- List of broadcasts -->
+              <div class="card" style="padding:2rem;">
+                <h3 style="font-size:1.15rem; margin-bottom:1.5rem;">Broadcast History</h3>
+                <div style="display:flex; flex-direction:column; gap:1rem; max-height:360px; overflow-y:auto;" id="owner-announcements-list">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- SUB-SCREEN: Manager profile settings -->
+          <div id="screen-owner-profile" class="owner-subscreen" style="display: none;">
+            <h2 style="font-size: 1.75rem; margin-bottom: 1.5rem;">Profile Settings</h2>
+
+            <div class="card" style="padding:2rem; max-width:600px;">
+              <h3 style="font-size:1.15rem; margin-bottom:1.5rem;">Edit Personal details</h3>
+              <form id="owner-profile-settings-form">
+                <div class="form-group">
+                  <label>Full Name</label>
+                  <input type="text" class="form-control" required id="owner-prof-name">
+                </div>
+                <div class="form-group">
+                  <label>Email Address</label>
+                  <input type="email" class="form-control" required id="owner-prof-email" readonly style="background:rgba(0,0,0,0.05); cursor:not-allowed;">
+                </div>
+                <div class="form-group">
+                  <label>Mobile Number</label>
+                  <input type="text" class="form-control" required id="owner-prof-phone">
+                </div>
+                <div class="form-group">
+                  <label>Change Password (Optional)</label>
+                  <input type="password" class="form-control" placeholder="Leave empty to keep current password" id="owner-prof-pass">
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top:1rem;">Save Profile Settings</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ================= SYSTEM ADMIN MODULE ================= -->
+      
+      <div id="admin-dashboard-layout" class="dashboard-wrapper" style="display: none;">
+        
+        <aside class="sidebar">
+          <ul class="sidebar-menu">
+            <li>
+              <a class="sidebar-link active" data-admin-screen="admin-overview">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                Overview & Analytics
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" data-admin-screen="admin-managers">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                Manage Managers
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" data-admin-screen="admin-areas">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                Parking Areas
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" data-admin-screen="admin-users">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path></svg>
+                Registered Customers
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" data-admin-screen="admin-notifications">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                Notifications Log
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" data-admin-screen="admin-settings">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                Admin Settings
+              </a>
+            </li>
+          </ul>
+        </aside>
+
+        <!-- Admin Content Area -->
+        <div class="dashboard-content-area">
+          <!-- Breadcrumbs -->
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.5rem; display:flex; gap:0.4rem; align-items:center;" class="breadcrumbs-container">
+            <span>Admin</span>
+            <span>/</span>
+            <span style="color:var(--primary); font-weight:600;" id="admin-breadcrumb-current">Dashboard</span>
+          </div>
+          
+          <!-- SUB-SCREEN: Admin Overview -->
+          <div id="screen-admin-overview" class="admin-subscreen" style="display: block;">
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap: wrap; gap: 1rem;">
+              <h2 style="font-size: 1.75rem;">Global Admin Statistics</h2>
+              <div style="display:flex; gap:0.5rem;">
+                <button class="btn btn-outline btn-sm" id="admin-export-bookings-csv">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Export CSV
+                </button>
+              </div>
+            </div>
+            
+            <div class="stats-grid">
+              <div class="stat-card" style="border-left: 4px solid var(--primary);">
+                <div>
+                  <div class="stat-label">Total Users</div>
+                  <div class="stat-val" id="admin-overview-users">0</div>
+                </div>
+              </div>
+              <div class="stat-card" style="border-left: 4px solid var(--accent);">
+                <div>
+                  <div class="stat-label">Active Managers</div>
+                  <div class="stat-val" id="admin-overview-managers">0</div>
+                </div>
+              </div>
+              <div class="stat-card" style="border-left: 4px solid #F59E0B;">
+                <div>
+                  <div class="stat-label">Locations Approved</div>
+                  <div class="stat-val" id="admin-overview-areas">0</div>
+                </div>
+              </div>
+              <div class="stat-card" style="border-left: 4px solid #10B981;">
+                <div>
+                  <div class="stat-label">Total Bookings</div>
+                  <div class="stat-val" id="admin-overview-bookings">0</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Double column charts -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:2rem; margin-top:2rem; flex-wrap: wrap;">
+              
+              <!-- Peak Hours SVG chart -->
+              <div class="chart-container-card" style="margin-bottom:0;">
+                <h3 style="font-size: 1.1rem; margin-bottom: 1.5rem;">Occupancy Peak Hours</h3>
+                <div style="height: 200px; display: flex; align-items: flex-end; justify-content: space-around; gap: 1rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border);">
+                  <div style="display:flex; flex-direction:column; align-items:center; flex:1; height: 40%;">
+                    <div style="width:100%; background:var(--primary); border-radius:4px 4px 0 0; flex:1; transition:var(--transition);" title="08:00 - 40%"></div>
+                    <span style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">08 AM</span>
+                  </div>
+                  <div style="display:flex; flex-direction:column; align-items:center; flex:1; height: 75%;">
+                    <div style="width:100%; background:var(--primary); border-radius:4px 4px 0 0; flex:1; transition:var(--transition);" title="12:00 - 75%"></div>
+                    <span style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">12 PM</span>
+                  </div>
+                  <div style="display:flex; flex-direction:column; align-items:center; flex:1; height: 95%;">
+                    <div style="width:100%; background:var(--primary); border-radius:4px 4px 0 0; flex:1; transition:var(--transition);" title="04:00 - 95%"></div>
+                    <span style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">04 PM</span>
+                  </div>
+                  <div style="display:flex; flex-direction:column; align-items:center; flex:1; height: 60%;">
+                    <div style="width:100%; background:var(--primary); border-radius:4px 4px 0 0; flex:1; transition:var(--transition);" title="08:00 - 60%"></div>
+                    <span style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">08 PM</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Revenue breakdown -->
+              <div class="chart-container-card" style="margin-bottom:0;">
+                <h3 style="font-size:1.15rem; margin-bottom:1.5rem;">Location Share Breakdown</h3>
+                <div style="display:flex; flex-direction:column; gap:1rem;" id="admin-location-shares-container">
+                  <!-- Generated dynamically from transactions -->
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Global transactions log -->
+            <div class="card" style="margin-top:2rem; padding: 2rem;">
+              <h3 style="font-size: 1.2rem; margin-bottom: 1.5rem;">SaaS Occupancy & Bookings Log</h3>
+              
+              <!-- Search filters row -->
+              <div style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; align-items:center;">
+                <div style="flex:1; min-width: 200px;">
+                  <input type="text" class="form-control" placeholder="Search by booking reference or client name..." id="admin-overview-search">
+                </div>
+                <div style="width: 180px;">
+                  <select class="form-control" id="admin-overview-filter-branch">
+                    <option value="all">All Branches</option>
+                  </select>
+                </div>
+                <div style="width: 150px;">
+                  <select class="form-control" id="admin-overview-filter-status">
+                    <option value="all">All Statuses</option>
+                    <option value="Active">Active</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Overstay">Overstay</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="table-wrapper">
+                <table class="custom-table">
+                  <thead>
+                    <tr>
+                      <th>Ref ID</th>
+                      <th>Driver</th>
+                      <th>Location</th>
+                      <th>Slot</th>
+                      <th>Schedule</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-overview-bookings-tbody"></tbody>
+                </table>
+              </div>
+
+              <!-- Pagination footer -->
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem; flex-wrap:wrap; gap:1rem;">
+                <span style="font-size:0.85rem; color:var(--text-muted);" id="admin-overview-pagination-info">Showing 1-10 of 100 entries</span>
+                <div style="display:flex; gap:0.5rem;">
+                  <button class="btn btn-outline btn-sm" id="admin-overview-prev-btn">Prev</button>
+                  <button class="btn btn-outline btn-sm" id="admin-overview-next-btn">Next</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- SUB-SCREEN: Manage Managers -->
+          <div id="screen-admin-managers" class="admin-subscreen" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap:wrap; gap:1rem;">
+              <h2 style="font-size: 1.75rem;">Parking Branch Managers</h2>
+              <button class="btn btn-primary" id="admin-add-manager-btn">+ Register Manager</button>
+            </div>
+
+            <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+              <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+                <div style="flex:1; min-width: 250px;">
+                  <input type="text" class="form-control" placeholder="Search managers by name or email..." id="admin-managers-search">
+                </div>
+              </div>
+            </div>
+            
+            <div class="table-wrapper">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Manager Name</th>
+                    <th>Email Address</th>
+                    <th>Assigned Area</th>
+                    <th>Joined Date</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-managers-table-body"></tbody>
+              </table>
+            </div>
+
+            <!-- Pagination footer -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem;">
+              <span style="font-size:0.85rem; color:var(--text-muted);" id="admin-managers-pagination-info">Showing manager entries</span>
+              <div style="display:flex; gap:0.5rem;">
+                <button class="btn btn-outline btn-sm" id="admin-managers-prev-btn">Prev</button>
+                <button class="btn btn-outline btn-sm" id="admin-managers-next-btn">Next</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-SCREEN: Manage Parking Areas -->
+          <div id="screen-admin-areas" class="admin-subscreen" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap:wrap; gap:1rem;">
+              <h2 style="font-size: 1.75rem;">Parking Branches Approved</h2>
+              <button class="btn btn-primary" id="admin-add-area-btn">+ Create Parking Site</button>
+            </div>
+
+            <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+              <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+                <div style="flex:1; min-width: 250px;">
+                  <input type="text" class="form-control" placeholder="Search branches by name or address..." id="admin-areas-search">
+                </div>
+                <div style="width: 180px;">
+                  <select class="form-control" id="admin-areas-filter-status">
+                    <option value="all">All Statuses</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Suspended">Suspended</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 1rem;" id="admin-areas-list-container"></div>
+
+            <!-- Pagination footer -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem;">
+              <span style="font-size:0.85rem; color:var(--text-muted);" id="admin-areas-pagination-info">Showing branch entries</span>
+              <div style="display:flex; gap:0.5rem;">
+                <button class="btn btn-outline btn-sm" id="admin-areas-prev-btn">Prev</button>
+                <button class="btn btn-outline btn-sm" id="admin-areas-next-btn">Next</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-SCREEN: View/Block/Delete Customers -->
+          <div id="screen-admin-users" class="admin-subscreen" style="display: none;">
+            <h2 style="font-size: 1.75rem; margin-bottom: 1.5rem;">Registered Driver Registry</h2>
+
+            <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+              <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+                <div style="flex:1; min-width: 250px;">
+                  <input type="text" class="form-control" placeholder="Search driver registry by name, email or vehicle..." id="admin-users-search">
+                </div>
+                <div style="width: 180px;">
+                  <select class="form-control" id="admin-users-filter-status">
+                    <option value="all">All Statuses</option>
+                    <option value="Active">Active</option>
+                    <option value="Blocked">Blocked</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-wrapper">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Email Address</th>
+                    <th>Vehicle Details</th>
+                    <th>Account Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-users-table-body"></tbody>
+              </table>
+            </div>
+
+            <!-- Pagination footer -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem;">
+              <span style="font-size:0.85rem; color:var(--text-muted);" id="admin-users-pagination-info">Showing user entries</span>
+              <div style="display:flex; gap:0.5rem;">
+                <button class="btn btn-outline btn-sm" id="admin-users-prev-btn">Prev</button>
+                <button class="btn btn-outline btn-sm" id="admin-users-next-btn">Next</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-SCREEN: Notifications Log & Broadcast -->
+          <div id="screen-admin-notifications" class="admin-subscreen" style="display: none;">
+            <h2 style="font-size: 1.75rem; margin-bottom: 1.5rem;">SaaS Notifications & Announcements</h2>
+
+            <div style="display:grid; grid-template-columns: 1.2fr 0.8fr; gap:2rem; align-items:start; flex-wrap:wrap;">
+              
+              <!-- Broadcast Form -->
+              <div class="card" style="padding: 2rem;">
+                <h3 style="font-size:1.2rem; margin-bottom:1.5rem;">Push New System Announcement</h3>
+                <form id="admin-broadcast-form">
+                  <div class="form-group">
+                    <label>Broadcast Title</label>
+                    <input type="text" class="form-control" required placeholder="System Maintenance Scheduled" id="broadcast-title">
+                  </div>
+                  <div class="form-group">
+                    <label>Target Audience</label>
+                    <select class="form-control" id="broadcast-target">
+                      <option value="all">All Registered Users</option>
+                      <option value="drivers">Drivers Only</option>
+                      <option value="managers">Branch Managers Only</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Announcement Body Text</label>
+                    <textarea class="form-control" required style="height: 110px; font-family: inherit; resize: none;" placeholder="Provide specific instructions or news announcements..." id="broadcast-message"></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary" style="margin-top: 1rem; width: 100%;">Broadcast Message</button>
+                </form>
+              </div>
+
+              <!-- Notifications Log -->
+              <div class="card" style="padding: 2rem;">
+                <h3 style="font-size:1.2rem; margin-bottom:1.5rem;">Announcements History</h3>
+                <div style="display:flex; flex-direction:column; gap:1rem; max-height:420px; overflow-y:auto;" id="admin-notifications-log-list">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- SUB-SCREEN: Admin Settings -->
+          <div id="screen-admin-settings" class="admin-subscreen" style="display: none;">
+            <h2 style="font-size: 1.75rem; margin-bottom: 1.5rem;">Admin Settings</h2>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:2rem; flex-wrap:wrap;">
+              
+              <!-- General Settings -->
+              <div class="card" style="padding: 2rem;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 1.5rem;">General Configurations</h3>
+                <form id="admin-settings-general-form">
+                  <div class="form-group">
+                    <label>Base Tariff Multiplier ($)</label>
+                    <input type="number" class="form-control" step="0.1" value="1.0" id="settings-cost-mult">
+                  </div>
+                  <div class="form-group">
+                    <label>Global Default Currency</label>
+                    <select class="form-control" id="settings-currency">
+                      <option value="USD">USD ($)</option>
+                      <option value="INR">INR (₹)</option>
+                      <option value="EUR">EUR (€)</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Save Configurations</button>
+                </form>
+              </div>
+
+              <!-- Maintenance & Security Operations -->
+              <div class="card" style="padding: 2rem; display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                  <h3 style="font-size: 1.2rem; margin-bottom: 1.5rem;">Administrative Operations</h3>
+                  <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Perform actions to initialize state systems or restore hardcoded demo registries.</p>
+                </div>
+                <div>
+                  <button class="btn btn-outline btn-danger" style="width:100%; text-align:center; display:block;" id="settings-reset-db-btn">Hard Reset Prototype Database</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Dialog Modals -->
+  
+  <!-- MODAL: Mock Payment Gateway -->
+  <div class="modal-overlay" id="modal-checkout-payment">
+    <div class="modal-box" style="max-width:480px;">
+      <h3 style="font-size:1.25rem; margin-bottom:1.5rem;">Select Payment Gateway</h3>
+      
+      <!-- Payment Option Tabs selector -->
+      <div class="payment-selector-grid">
+        <div class="payment-selector-btn active" data-pay-method="upi">UPI Scan</div>
+        <div class="payment-selector-btn" data-pay-method="card">Card Details</div>
+        <div class="payment-selector-btn" data-pay-method="net">NetBanking</div>
+      </div>
+
+      <!-- Payment details panels -->
+      <div class="payment-content-block" id="pay-block-upi">
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem; text-align:center;">Scan the UPI QR code below. Merchant UPI: <strong id="pay-upi-merchant-id">merchant@upi</strong></p>
+        <div style="background:var(--bg-primary); padding:1rem; border-radius:var(--radius-md); text-align:center; margin-bottom:1.5rem; display:flex; justify-content:center; align-items:center;">
+          <!-- SVG QR Code pattern -->
+          <svg id="pay-upi-qr-svg" width="100" height="100" viewBox="0 0 100 100" style="margin:0 auto; display:none;">
+            <rect x="0" y="0" width="20" height="20" fill="currentColor"/>
+            <rect x="2" y="2" width="16" height="16" fill="white"/>
+            <rect x="5" y="5" width="10" height="10" fill="currentColor"/>
+            
+            <rect x="80" y="0" width="20" height="20" fill="currentColor"/>
+            <rect x="82" y="2" width="16" height="16" fill="white"/>
+            <rect x="85" y="5" width="10" height="10" fill="currentColor"/>
+            
+            <rect x="0" y="80" width="20" height="20" fill="currentColor"/>
+            <rect x="2" y="82" width="16" height="16" fill="white"/>
+            <rect x="5" y="85" width="10" height="10" fill="currentColor"/>
+            
+            <rect x="30" y="30" width="40" height="40" fill="currentColor"/>
+            <rect x="32" y="32" width="36" height="36" fill="white"/>
+          </svg>
+          <!-- Custom QR Image uploaded by Branch Manager -->
+          <img id="pay-upi-qr-image" style="width:120px; height:120px; object-fit:contain; display:none;" alt="Branch Payment QR Code">
+          <!-- Fallback message -->
+          <div id="pay-upi-qr-fallback" style="display:none; color: var(--danger); font-size: 0.9rem; font-weight: 500; text-align: center; padding: 1rem;">QR Code not available. Please contact the parking manager.</div>
+        </div>
+      </div>
+
+      <div class="payment-content-block" id="pay-block-card" style="display:none;">
+        <div class="form-group">
+          <label>Card Number</label>
+          <input type="text" class="form-control" placeholder="4111 2222 3333 4022" value="4111 2222 3333 4022">
+        </div>
+        <div class="form-group row">
+          <div>
+            <label>Expiry Date</label>
+            <input type="text" class="form-control" placeholder="MM/YY" value="08/29">
+          </div>
+          <div>
+            <label>CVV</label>
+            <input type="password" class="form-control" placeholder="•••" value="123">
+          </div>
+        </div>
+      </div>
+
+      <div class="payment-content-block" id="pay-block-net" style="display:none;">
+        <div class="form-group">
+          <label>Choose Banking Branch</label>
+          <select class="form-control">
+            <option>Chase Bank Plaza</option>
+            <option>Capital One Financial</option>
+            <option>Bank of America Corporate</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="border-top:1px dashed var(--border); padding-top:1.25rem; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <span style="font-size:0.8rem; color:var(--text-muted);">Amount Settle</span>
+          <h4 style="font-size:1.2rem; color:var(--secondary);" id="pay-modal-total-amt">$9.50</h4>
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+          <button class="btn btn-outline btn-sm close-modal-btn">Cancel</button>
+          <button class="btn btn-primary btn-sm" id="pay-confirm-gate-btn">Complete Payment</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Add Vehicle -->
+  <div class="modal-overlay" id="modal-add-vehicle">
+    <div class="modal-box">
+      <h3 style="font-size: 1.25rem; margin-bottom: 1rem;">Add New Vehicle</h3>
+      <form id="add-vehicle-form">
+        <div class="form-group">
+          <label>Car Model / Name</label>
+          <input type="text" class="form-control" required placeholder="Tesla Model Y" id="veh-modal-model">
+        </div>
+        <div class="form-group">
+          <label>Plate Number</label>
+          <input type="text" class="form-control" required placeholder="CA-192-A93" id="veh-modal-plate">
+        </div>
+        <div class="form-group">
+          <label>Vehicle Type</label>
+          <select class="form-control" id="veh-modal-type">
+            <option value="Car">Car</option>
+            <option value="Bike">Bike</option>
+            <option value="EV">EV</option>
+          </select>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-outline btn-sm close-modal-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Add Vehicle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Add Payment Card -->
+  <div class="modal-overlay" id="modal-add-payment">
+    <div class="modal-box">
+      <h3 style="font-size: 1.25rem; margin-bottom: 1rem;">Add Payment Method</h3>
+      <form id="add-payment-form">
+        <div class="form-group">
+          <label>Cardholder Name</label>
+          <input type="text" class="form-control" required placeholder="Sarah Jenkins" id="pay-modal-name">
+        </div>
+        <div class="form-group">
+          <label>Card Number</label>
+          <input type="text" class="form-control" required placeholder="4111 2222 3333 4444" id="pay-modal-number">
+        </div>
+        <div class="form-group row">
+          <div>
+            <label>Expiry Date</label>
+            <input type="text" class="form-control" required placeholder="MM/YY" id="pay-modal-expiry">
+          </div>
+          <div>
+            <label>CVV Code</label>
+            <input type="password" class="form-control" required placeholder="•••" maxlength="3" id="pay-modal-cvv">
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-outline btn-sm close-modal-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Add Payment Card</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Add/Edit Manager (Admin Panel) -->
+  <div class="modal-overlay" id="modal-admin-manager">
+    <div class="modal-box">
+      <h3 style="font-size: 1.25rem; margin-bottom: 1.25rem;" id="admin-manager-modal-title">Register Branch Manager</h3>
+      <form id="admin-manager-form">
+        <div class="form-group">
+          <label>Manager Name</label>
+          <input type="text" class="form-control" required placeholder="Helena Vance" id="am-modal-name">
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" class="form-control" required placeholder="name@domain.com" id="am-modal-email">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" class="form-control" required placeholder="••••••••" id="am-modal-password">
+        </div>
+        <div class="form-group">
+          <label>Assign Parking Branch</label>
+          <select class="form-control" id="am-modal-branch">
+            <!-- Populated dynamically with approved branches -->
+          </select>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-outline btn-sm close-modal-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Confirm Manager</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Add Parking Site (Admin Panel) -->
+  <div class="modal-overlay" id="modal-admin-parking">
+    <div class="modal-box" style="max-width:600px;">
+      <h3 style="font-size: 1.25rem; margin-bottom: 1.25rem;">Create Parking Branch</h3>
+      <form id="admin-parking-form">
+        <div class="form-group">
+          <label>Parking Name</label>
+          <input type="text" class="form-control" required placeholder="Broadway Plaza Parking" id="ap-modal-name">
+        </div>
+        <div class="form-group">
+          <label>Location Address</label>
+          <input type="text" class="form-control" required placeholder="281 Broadway St, NY" id="ap-modal-addr">
+        </div>
+        <div class="form-group row">
+          <div>
+            <label>Hourly Tariff Rate ($)</label>
+            <input type="number" class="form-control" step="0.5" required placeholder="4.50" id="ap-modal-rate">
+          </div>
+          <div>
+            <label>Total Spaces (Slots)</label>
+            <input type="number" class="form-control" required placeholder="12" id="ap-modal-slots">
+          </div>
+        </div>
+        <div class="form-group row">
+          <div>
+            <label>GPS Latitude (Map pin)</label>
+            <input type="text" class="form-control" required placeholder="40.768" id="ap-modal-lat">
+          </div>
+          <div>
+            <label>GPS Longitude (Map pin)</label>
+            <input type="text" class="form-control" required placeholder="-73.985" id="ap-modal-lng">
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-outline btn-sm close-modal-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Approve & Launch Site</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Edit User (Admin Panel) -->
+  <div class="modal-overlay" id="modal-admin-user">
+    <div class="modal-box">
+      <h3 style="font-size: 1.25rem; margin-bottom: 1.25rem;">Edit Driver Profile</h3>
+      <form id="admin-user-form">
+        <input type="hidden" id="au-modal-id">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" class="form-control" required id="au-modal-name">
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" class="form-control" required id="au-modal-email">
+        </div>
+        <div class="form-group">
+          <label>Mobile Number</label>
+          <input type="text" class="form-control" required id="au-modal-phone">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-outline btn-sm close-modal-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Premium Confirmation Overlay -->
+  <div class="modal-overlay" id="modal-admin-confirm" style="z-index: 3000;">
+    <div class="modal-box" style="max-width: 400px; text-align: center; padding: 2rem;">
+      <div style="background: rgba(239, 68, 68, 0.1); color: var(--danger); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 1.75rem; font-weight: bold;">!</div>
+      <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem;" id="confirm-title">Are you sure?</h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;" id="confirm-message">This action cannot be undone.</p>
+      <div style="display: flex; justify-content: center; gap: 0.75rem;">
+        <button type="button" class="btn btn-outline btn-sm" id="confirm-cancel-btn">Cancel</button>
+        <button type="button" class="btn btn-danger btn-sm" id="confirm-ok-btn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Chatbot Assistant Widget -->
+  <div id="ai-chatbot-widget" style="position: fixed; bottom: 25px; right: 25px; z-index: 5000; font-family: inherit;">
+    <!-- Floating Trigger Button -->
+    <button id="ai-chatbot-toggle" style="width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: white; border: none; box-shadow: 0 4px 16px rgba(37,99,235,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; position: relative;">
+      <!-- Chat Icon SVG -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+      <span style="position: absolute; top: 0; right: 0; width: 12px; height: 12px; background: var(--success); border-radius: 50%; border: 2px solid white;"></span>
+    </button>
+
+    <!-- Chatbot Container Panel -->
+    <div id="ai-chatbot-panel" style="display: none; width: 360px; height: 480px; background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: 0 8px 32px rgba(0,0,0,0.15); flex-direction: column; overflow: hidden; position: absolute; bottom: 70px; right: 0; transition: all 0.3s ease;">
+      <!-- Header -->
+      <div style="background: var(--secondary); color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <div style="width: 10px; height: 10px; background: var(--success); border-radius: 50%;"></div>
+          <strong style="font-size: 0.95rem;">ParkEase Assistant</strong>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button id="ai-chatbot-minimize" style="background: none; border: none; color: white; cursor: pointer; opacity: 0.7; font-size: 1rem; padding: 2px;">_</button>
+          <button id="ai-chatbot-close" style="background: none; border: none; color: white; cursor: pointer; opacity: 0.7; font-size: 1rem; padding: 2px;">×</button>
+        </div>
+      </div>
+
+      <!-- Messages Area -->
+      <div id="ai-chatbot-messages" style="flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; background: var(--bg-primary);">
+        <div style="align-self: flex-start; background: white; padding: 0.75rem 1rem; border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 0; font-size: 0.85rem; max-width: 80%; border: 1px solid var(--border); line-height: 1.4;">
+          Hello! How can I assist you with your parking today? Feel free to ask about nearby garages, slot details, or payment updates.
+        </div>
+      </div>
+
+      <!-- Quick Suggestion Chips -->
+      <div style="padding: 0.5rem 1rem; background: white; border-top: 1px solid var(--border); display: flex; gap: 0.4rem; overflow-x: auto; white-space: nowrap;" id="ai-chatbot-suggestions">
+        <button type="button" class="filter-chip" style="font-size: 0.75rem; padding: 0.25rem 0.6rem;" onclick="handleChatSuggestion('Find Parking')">Find Parking</button>
+        <button type="button" class="filter-chip" style="font-size: 0.75rem; padding: 0.25rem 0.6rem;" onclick="handleChatSuggestion('My Bookings')">My Bookings</button>
+        <button type="button" class="filter-chip" style="font-size: 0.75rem; padding: 0.25rem 0.6rem;" onclick="handleChatSuggestion('Parking Prices')">Parking Prices</button>
+        <button type="button" class="filter-chip" style="font-size: 0.75rem; padding: 0.25rem 0.6rem;" onclick="handleChatSuggestion('Contact Support')">Contact Support</button>
+      </div>
+
+      <!-- Input Form -->
+      <form id="ai-chatbot-form" style="padding: 0.75rem 1rem; background: white; border-top: 1px solid var(--border); display: flex; gap: 0.5rem;">
+        <input type="text" id="ai-chatbot-input" placeholder="Type a message..." style="flex: 1; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.5rem 0.75rem; font-size: 0.85rem; outline: none;" required autocomplete="off">
+        <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Send</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Leaflet Maps Script Library -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
